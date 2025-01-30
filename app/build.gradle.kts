@@ -16,13 +16,18 @@ repositories {
 }
 
 dependencies {
+    implementation(libs.calcite.core)
+    implementation(libs.calcite.server) // For SqlDdlParserImpl
+
+    implementation(libs.substrait.core)
+    implementation(libs.substrait.isthmus)
+
+    implementation("org.slf4j:slf4j-jdk14:2.0.16")
+
     // Use JUnit Jupiter for testing.
-    testImplementation(libs.junit.jupiter)
-
+    testImplementation(libs.junit.jupiter.api)
+    testRuntimeOnly(libs.junit.jupiter.engine)
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
-
-    // This dependency is used by the application.
-    implementation(libs.guava)
 }
 
 // Apply a specific Java toolchain to ease working on different environments.
