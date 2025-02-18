@@ -24,6 +24,7 @@ public class WhiteProject extends Project implements WhiteRel {
     super(
         cluster, traits, Collections.emptyList(), input, projects, rowType, Collections.emptySet());
     assert traits.getConvention() == WhiteRel.CONVENTION;
+    assert input.getConvention() == WhiteRel.CONVENTION;
   }
 
   public static WhiteProject create(

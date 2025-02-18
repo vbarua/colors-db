@@ -15,7 +15,7 @@ public class WhiteProjectRule extends WhiteConverterRule {
               LogicalProject.class,
               Convention.NONE,
               WhiteRel.CONVENTION,
-              WhiteConverterRule.class.getName())
+              WhiteProjectRule.class.getName())
           .withRuleFactory(WhiteProjectRule::new)
           .toRule(WhiteProjectRule.class);
 
