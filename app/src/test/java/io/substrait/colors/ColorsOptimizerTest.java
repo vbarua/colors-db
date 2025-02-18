@@ -12,18 +12,20 @@ public class ColorsOptimizerTest {
   class SqlParserTest {
     @Test
     void red() {
-      var relRoot = ColorsOptimizer.parseFromSql("SELECT p_partkey, p_name FROM red.part");
+      var optimizer = new ColorsOptimizer();
+      var relRoot = optimizer.parseFromSql("SELECT p_partkey, p_name FROM red.part");
       assertEquals(
           """
-        LogicalProject(p_partkey=[$0], p_name=[$1])
-          RedTableScan(table=[[red, part]])
-        """,
+          LogicalProject(p_partkey=[$0], p_name=[$1])
+            RedTableScan(table=[[red, part]])
+          """,
           relRoot.project().explain());
     }
 
     @Test
     void green() {
-      var relRoot = ColorsOptimizer.parseFromSql("SELECT o_orderkey, o_custkey FROM green.orders");
+      var optimizer = new ColorsOptimizer();
+      var relRoot = optimizer.parseFromSql("SELECT o_orderkey, o_custkey FROM green.orders");
       assertEquals(
           """
           LogicalProject(o_orderkey=[$0], o_custkey=[$1])
@@ -34,7 +36,8 @@ public class ColorsOptimizerTest {
 
     @Test
     void blue() {
-      var relRoot = ColorsOptimizer.parseFromSql("SELECT c_custkey, c_name FROM blue.customer");
+      var optimizer = new ColorsOptimizer();
+      var relRoot = optimizer.parseFromSql("SELECT c_custkey, c_name FROM blue.customer");
       assertEquals(
           """
           LogicalProject(c_custkey=[$0], c_name=[$1])
@@ -48,13 +51,36 @@ public class ColorsOptimizerTest {
   class OptimizerTest {
     @Test
     void red() {
-      RelNode physicalRel =
-          ColorsOptimizer.optimizeFromSQL("SELECT p_partkey, p_name FROM red.part");
+      var optimizer = new ColorsOptimizer();
+      RelNode physicalRel = optimizer.optimizeFromSQL("SELECT p_partkey, p_name FROM red.part");
       assertEquals(
           """
           WhiteProject(p_partkey=[$0], p_name=[$1])
             RedToWhiteConverter
               RedTableScan(table=[[red, part]])
+          """,
+          physicalRel.explain());
+    }
+
+    @Test
+    void whiteJoin() {
+      var optimizer = new ColorsOptimizer();
+      var query =
+          """
+          SELECT o_orderkey, c_custkey
+          FROM green.orders o
+          JOIN blue.customer c
+            ON o.o_custkey = c.c_custkey
+          """;
+      RelNode physicalRel = optimizer.optimizeFromSQL(query);
+      assertEquals(
+          """
+          WhiteProject(o_orderkey=[$0], c_custkey=[$9])
+            WhiteJoin(condition=[=($1, $9)], joinType=[inner])
+              GreenToWhiteConverter
+                GreenTableScan(table=[[green, orders]])
+              BlueToWhiteConverter
+                BlueTableScan(table=[[blue, customer]])
           """,
           physicalRel.explain());
     }

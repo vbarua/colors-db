@@ -60,7 +60,7 @@ public class ColorsOptimizer {
       new SubstraitToCalcite(extensions, typeFactory);
 
   static final SubstraitRelVisitor calciteToSubstrait =
-      new SubstraitRelVisitor(typeFactory, extensions);
+      new ColorsSubstraitProducer(typeFactory, extensions);
 
   static final List<RelOptRule> RULES = ColorsRules.WHITE_RULES;
   static final Program PROGRAM =
@@ -70,19 +70,19 @@ public class ColorsOptimizer {
           // Apply Colors Rules
           Programs.of(RuleSets.ofList(RULES)));
 
-  private ColorsOptimizer() {}
+  private final RelOptPlanner planner;
 
-  public static RelRoot parseFromSql(String query) {
-    return parseFromSql(query, getPlanner());
+  public ColorsOptimizer() {
+    this.planner = getPlanner();
   }
 
-  private static RelRoot parseFromSql(String query, RelOptPlanner planner) {
+  public RelRoot parseFromSql(String query) {
     RelOptCluster relOptCluster = RelOptCluster.create(planner, rexBuilder);
     var sqlToCalcite = new SqlToCalcite(catalogReader, relOptCluster);
     return sqlToCalcite.convertSelect(query);
   }
 
-  private static RelOptPlanner getPlanner() {
+  private RelOptPlanner getPlanner() {
     var planner = new VolcanoPlanner();
     // The Convention trait is used by the Calcite optimizer to track which system a relation is
     // executed on.
@@ -95,15 +95,14 @@ public class ColorsOptimizer {
     return planner;
   }
 
-  public static RelNode optimizeFromSQL(String query) {
-    var planner = getPlanner();
-    RelRoot logicalCalciteRoot = parseFromSql(query, planner);
+  public RelNode optimizeFromSQL(String query) {
+    RelRoot logicalCalciteRoot = parseFromSql(query);
     RelNode logicalCalciteRel = logicalCalciteRoot.project();
-    RelNode physicalPlan = optimize(planner, logicalCalciteRel);
+    RelNode physicalPlan = optimize(logicalCalciteRel);
     return physicalPlan;
   }
 
-  public static RelNode optimize(RelOptPlanner planner, RelNode logicalPlan) {
+  public RelNode optimize(RelNode logicalPlan) {
     // The aim is to run the input plan on WHITE
     var desiredOutputTraits =
         logicalPlan
@@ -119,9 +118,8 @@ public class ColorsOptimizer {
     return planner.findBestExp();
   }
 
-  public static Rel toSubstrait(RelNode physicalPlan) {
-    // TODO
+  public Rel toSubstrait(RelNode physicalPlan) {
     Rel optimizedSubstraitRel = calciteToSubstrait.apply(physicalPlan);
-    return null;
+    return optimizedSubstraitRel;
   }
 }
