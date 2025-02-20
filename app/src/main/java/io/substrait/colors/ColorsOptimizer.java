@@ -2,10 +2,12 @@ package io.substrait.colors;
 
 import com.vbarua.isthmus.SqlToCalcite;
 import io.substrait.colors.systems.white.WhiteRel;
+import io.substrait.extension.ExtensionCollector;
 import io.substrait.extension.SimpleExtension;
 import io.substrait.isthmus.SubstraitRelVisitor;
 import io.substrait.isthmus.SubstraitToCalcite;
 import io.substrait.relation.Rel;
+import io.substrait.relation.RelProtoConverter;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
@@ -98,8 +100,8 @@ public class ColorsOptimizer {
   public RelNode optimizeFromSQL(String query) {
     RelRoot logicalCalciteRoot = parseFromSql(query);
     RelNode logicalCalciteRel = logicalCalciteRoot.project();
-    RelNode physicalPlan = optimize(logicalCalciteRel);
-    return physicalPlan;
+    RelNode physicalCalcitePlan = optimize(logicalCalciteRel);
+    return physicalCalcitePlan;
   }
 
   public RelNode optimize(RelNode logicalPlan) {
@@ -121,5 +123,33 @@ public class ColorsOptimizer {
   public Rel toSubstrait(RelNode physicalPlan) {
     Rel optimizedSubstraitRel = calciteToSubstrait.apply(physicalPlan);
     return optimizedSubstraitRel;
+  }
+
+  static io.substrait.proto.Version VERSION =
+      io.substrait.proto.Version.newBuilder()
+          .setMajorNumber(0)
+          .setMinorNumber(66)
+          .setPatchNumber(0)
+          .setProducer("calcite:colors-db")
+          .build();
+
+  public io.substrait.proto.Plan toSubstraitProto(Rel rel, List<String> rootNames) {
+    // TODO: ideally we would use the PlanProtoConverter#toProto method for this.
+    //   However, as is the API of that class does not make it easy.
+    ExtensionCollector extensionCollector = new ExtensionCollector();
+    RelProtoConverter relProtoConverter = new RelProtoConverter(extensionCollector);
+
+    io.substrait.proto.Rel protoRel = relProtoConverter.toProto(rel);
+    var protoPlanBuilder =
+        io.substrait.proto.Plan.newBuilder()
+            .setVersion(VERSION)
+            .addRelations(
+                io.substrait.proto.PlanRel.newBuilder()
+                    .setRoot(
+                        io.substrait.proto.RelRoot.newBuilder()
+                            .setInput(protoRel)
+                            .addAllNames(rootNames)));
+    extensionCollector.addExtensionsToPlan(protoPlanBuilder);
+    return protoPlanBuilder.build();
   }
 }

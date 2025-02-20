@@ -30,6 +30,7 @@ dependencies {
     compileOnly(libs.immutables.annotations)
     annotationProcessor(libs.immutables.value)
     implementation(libs.protobuf.java)
+    implementation(libs.protobuf.java.util)
     implementation(libs.substrait.core)
     implementation(libs.substrait.isthmus)
 
@@ -53,7 +54,7 @@ java {
         languageVersion = JavaLanguageVersion.of(21)
     }
 }
-print(libs.versions.protobuf.get())
+
 protobuf {
     protoc {
         artifact =  "com.google.protobuf:protoc:${libs.versions.protobuf.get()}"

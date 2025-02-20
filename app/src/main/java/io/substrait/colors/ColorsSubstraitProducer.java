@@ -1,6 +1,7 @@
 package io.substrait.colors;
 
 import io.substrait.colors.systems.blue.BlueSubstraitProducer;
+import io.substrait.colors.systems.red.RedQuery;
 import io.substrait.colors.systems.white.BlueToWhiteConverter;
 import io.substrait.colors.systems.white.GreenToWhiteConverter;
 import io.substrait.colors.systems.white.RedToWhiteConverter;
