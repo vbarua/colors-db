@@ -9,10 +9,12 @@ plugins {
     // Apply the application plugin to add support for building a CLI application in Java.
     application
     id("com.diffplug.spotless") version "7.0.2"
+    id("com.google.protobuf") version "0.9.4"
 }
 
 spotless {
     java {
+        targetExclude("**/generated/**/*.*")
         googleJavaFormat()
     }
 }
@@ -27,7 +29,7 @@ dependencies {
     implementation(libs.calcite.server) // For SqlDdlParserImpl
     compileOnly(libs.immutables.annotations)
     annotationProcessor(libs.immutables.value)
-
+    implementation(libs.protobuf.java)
     implementation(libs.substrait.core)
     implementation(libs.substrait.isthmus)
 
@@ -39,12 +41,25 @@ dependencies {
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
 
+sourceSets {
+    main {
+        proto.srcDirs("src/main/resources/extensions")
+    }
+}
+
 // Apply a specific Java toolchain to ease working on different environments.
 java {
     toolchain {
         languageVersion = JavaLanguageVersion.of(21)
     }
 }
+print(libs.versions.protobuf.get())
+protobuf {
+    protoc {
+        artifact =  "com.google.protobuf:protoc:${libs.versions.protobuf.get()}"
+    }
+}
+
 
 tasks.named<Test>("test") {
     // Use JUnit Platform for unit tests.
