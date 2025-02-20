@@ -1,5 +1,6 @@
 package io.substrait.colors;
 
+import io.substrait.colors.systems.blue.BlueSubstraitProducer;
 import io.substrait.colors.systems.white.BlueToWhiteConverter;
 import io.substrait.colors.systems.white.GreenToWhiteConverter;
 import io.substrait.colors.systems.white.RedToWhiteConverter;
@@ -50,7 +51,8 @@ public class ColorsSubstraitProducer extends SubstraitRelVisitor {
   }
 
   protected Rel visit(BlueToWhiteConverter blueToWhiteConverter) {
-    throw new RuntimeException("Handle BLUE");
+    return BlueSubstraitProducer.produce(
+        blueToWhiteConverter.getInput(), rexExpressionConverter, typeConverter);
   }
 
   protected Rel visit(GreenToWhiteConverter greenToWhiteConverter) {

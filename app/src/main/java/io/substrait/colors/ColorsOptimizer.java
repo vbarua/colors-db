@@ -62,7 +62,7 @@ public class ColorsOptimizer {
   static final SubstraitRelVisitor calciteToSubstrait =
       new ColorsSubstraitProducer(typeFactory, extensions);
 
-  static final List<RelOptRule> RULES = ColorsRules.WHITE_RULES;
+  static final List<RelOptRule> RULES = ColorsRules.ALL_RULES;
   static final Program PROGRAM =
       Programs.sequence(
           // Remove subqueries

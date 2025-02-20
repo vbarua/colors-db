@@ -63,6 +63,23 @@ public class ColorsOptimizerTest {
     }
 
     @Test
+    void blueFilter() {
+      var optimizer = new ColorsOptimizer();
+      RelNode physicalRel =
+          optimizer.optimizeFromSQL(
+              "SELECT c_name FROM blue.customer WHERE c_nationkey=5 AND c_name > 'g'");
+      assertEquals(
+          """
+          WhiteProject(c_name=[$1])
+            WhiteFilter(condition=[>($1, 'g')])
+              BlueToWhiteConverter
+                BlueFilter(condition=[=($3, 5)])
+                  BlueTableScan(table=[[blue, customer]])
+          """,
+          physicalRel.explain());
+    }
+
+    @Test
     void whiteJoin() {
       var optimizer = new ColorsOptimizer();
       var query =

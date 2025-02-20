@@ -25,6 +25,8 @@ repositories {
 dependencies {
     implementation(libs.calcite.core)
     implementation(libs.calcite.server) // For SqlDdlParserImpl
+    compileOnly(libs.immutables.annotations)
+    annotationProcessor(libs.immutables.value)
 
     implementation(libs.substrait.core)
     implementation(libs.substrait.isthmus)

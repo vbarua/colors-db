@@ -19,4 +19,9 @@ public class BlueTableScan extends TableScan implements BlueRel {
     final RelTraitSet traitSet = cluster.traitSetOf(CONVENTION);
     return new BlueTableScan(cluster, traitSet, table);
   }
+
+  @Override
+  public <T> T accept(BlueVisitor<T> blueVisitor) {
+    return blueVisitor.visit(this);
+  }
 }
