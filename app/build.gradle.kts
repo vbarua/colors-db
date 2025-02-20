@@ -29,7 +29,7 @@ dependencies {
     implementation(libs.substrait.core)
     implementation(libs.substrait.isthmus)
 
-    implementation("org.slf4j:slf4j-jdk14:2.0.16")
+    implementation("ch.qos.logback:logback-classic:1.5.16")
 
     // Use JUnit Jupiter for testing.
     testImplementation(libs.junit.jupiter.api)
