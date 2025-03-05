@@ -16,6 +16,8 @@ public class ColorsCLI {
     String query = args[0];
 
     ColorsOptimizer optimizer = new ColorsOptimizer();
+    System.out.println("=== Query ===");
+    System.out.println(query);
 
     System.out.println("=== Logical Calcite Plan ===");
     RelRoot logicalCalcitePlanRoot = optimizer.parseFromSql(query);

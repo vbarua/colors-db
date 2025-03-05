@@ -1,12 +1,16 @@
 package io.substrait.colors.systems.red;
 
 import java.util.Collections;
+import javax.annotation.Nullable;
 import org.apache.calcite.plan.RelOptCluster;
+import org.apache.calcite.plan.RelOptCost;
+import org.apache.calcite.plan.RelOptPlanner;
 import org.apache.calcite.plan.RelTraitSet;
 import org.apache.calcite.rel.RelCollations;
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.core.Join;
 import org.apache.calcite.rel.core.JoinRelType;
+import org.apache.calcite.rel.metadata.RelMetadataQuery;
 import org.apache.calcite.rex.RexNode;
 
 public class RedJoin extends Join implements RedRel {
@@ -27,8 +31,6 @@ public class RedJoin extends Join implements RedRel {
         condition,
         Collections.emptySet(),
         joinType);
-    assert left.getConvention() == CONVENTION;
-    assert right.getConvention() == CONVENTION;
     assert getConvention() == CONVENTION;
   }
 
@@ -53,5 +55,10 @@ public class RedJoin extends Join implements RedRel {
       JoinRelType joinType,
       boolean semiJoinDone) {
     return new RedJoin(left.getCluster(), traitSet, left, right, conditionExpr, joinType);
+  }
+
+  @Override
+  public @Nullable RelOptCost computeSelfCost(RelOptPlanner planner, RelMetadataQuery mq) {
+    return super.computeSelfCost(planner, mq).multiplyBy(COST_SCALING);
   }
 }

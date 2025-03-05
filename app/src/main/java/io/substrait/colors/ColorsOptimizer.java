@@ -112,8 +112,7 @@ public class ColorsOptimizer {
             // Our desired output traits are the same as those of the logical plan input, except for
             // the Convention
             .replace(WhiteRel.CONVENTION);
-    planner.setRoot(logicalPlan);
-    // We don't have any materializations or lattices for the optimzer to use
+    // We don't have any materializations or lattices for the optimizer to use
     List<RelOptMaterialization> materializations = Collections.emptyList();
     List<RelOptLattice> lattices = Collections.emptyList();
     PROGRAM.run(planner, logicalPlan, desiredOutputTraits, materializations, lattices);

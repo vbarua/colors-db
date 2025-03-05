@@ -6,4 +6,5 @@ import org.apache.calcite.rel.RelNode;
 /** Marks a {@link RelNode} as belonging to RED */
 public interface RedRel extends RelNode {
   Convention CONVENTION = new Convention.Impl("RED", RedRel.class);
+  double COST_SCALING = 0.01;
 }
