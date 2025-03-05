@@ -66,7 +66,7 @@ public class BlueFilter extends Filter implements BlueRel {
 
   @Override
   public @Nullable RelOptCost computeSelfCost(RelOptPlanner planner, RelMetadataQuery mq) {
-    return super.computeSelfCost(planner, mq).multiplyBy(BLUE_COST_SCALING);
+    return super.computeSelfCost(planner, mq).multiplyBy(COST_SCALING);
   }
 
   @Override

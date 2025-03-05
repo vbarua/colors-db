@@ -2,12 +2,16 @@ package io.substrait.colors.systems.white;
 
 import java.util.Collections;
 import org.apache.calcite.plan.RelOptCluster;
+import org.apache.calcite.plan.RelOptCost;
+import org.apache.calcite.plan.RelOptPlanner;
 import org.apache.calcite.plan.RelTraitSet;
 import org.apache.calcite.rel.RelCollations;
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.core.Join;
 import org.apache.calcite.rel.core.JoinRelType;
+import org.apache.calcite.rel.metadata.RelMetadataQuery;
 import org.apache.calcite.rex.RexNode;
+import org.checkerframework.checker.nullness.qual.Nullable;
 
 public class WhiteJoin extends Join implements WhiteRel {
 
@@ -27,8 +31,6 @@ public class WhiteJoin extends Join implements WhiteRel {
         condition,
         Collections.emptySet(),
         joinType);
-    assert left.getConvention() == CONVENTION;
-    assert right.getConvention() == CONVENTION;
     assert getConvention() == CONVENTION;
   }
 
@@ -52,6 +54,11 @@ public class WhiteJoin extends Join implements WhiteRel {
       RelNode right,
       JoinRelType joinType,
       boolean semiJoinDone) {
-    return new WhiteJoin(left.getCluster(), traitSet, left, right, conditionExpr, joinType);
+    return new WhiteJoin(getCluster(), traitSet, left, right, conditionExpr, joinType);
+  }
+
+  @Override
+  public @Nullable RelOptCost computeSelfCost(RelOptPlanner planner, RelMetadataQuery mq) {
+    return super.computeSelfCost(planner, mq).multiplyBy(COST_SCALING);
   }
 }
