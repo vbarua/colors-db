@@ -2,7 +2,9 @@ package io.substrait.colors;
 
 import io.substrait.colors.systems.blue.rules.BlueFilterRule;
 import io.substrait.colors.systems.blue.rules.BlueFilterSplitRule;
+import io.substrait.colors.systems.red.rules.RedFilterRule;
 import io.substrait.colors.systems.red.rules.RedJoinRule;
+import io.substrait.colors.systems.red.rules.RedProjectRule;
 import io.substrait.colors.systems.white.rules.BlueToWhiteConverterRule;
 import io.substrait.colors.systems.white.rules.GreenToWhiteConverterRule;
 import io.substrait.colors.systems.white.rules.RedToWhiteConverterRule;
@@ -13,6 +15,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.stream.Stream;
 import org.apache.calcite.plan.RelOptRule;
+import org.apache.calcite.rel.rules.CoreRules;
 
 /**
  * Organizes the various {@link RelOptRule}s used when optimizing queries for the RED, GREEN, BLUE
@@ -20,7 +23,10 @@ import org.apache.calcite.plan.RelOptRule;
  */
 public class ColorsRules {
 
-  public static final List<RelOptRule> RED_RULES = List.of(RedJoinRule.INSTANCE);
+  public static final List<RelOptRule> CALCITE_RULES = List.of(CoreRules.FILTER_INTO_JOIN);
+
+  public static final List<RelOptRule> RED_RULES =
+      List.of(RedFilterRule.INSTANCE, RedProjectRule.INSTANCE, RedJoinRule.INSTANCE);
 
   public static final List<RelOptRule> GREEN_RULES = List.of();
 
@@ -42,7 +48,7 @@ public class ColorsRules {
           WhiteProjectRule.INSTANCE);
 
   public static final List<RelOptRule> ALL_RULES =
-      Stream.of(RED_RULES, GREEN_RULES, BLUE_RULES, WHITE_RULES)
+      Stream.of(CALCITE_RULES, RED_RULES, GREEN_RULES, BLUE_RULES, WHITE_RULES)
           .flatMap(Collection::stream)
           .toList();
 }

@@ -55,10 +55,34 @@ public class ColorsOptimizerTest {
       RelNode physicalRel = optimizer.optimizeFromSQL("SELECT p_partkey, p_name FROM red.part");
       assertEquals(
           """
-          WhiteProject(p_partkey=[$0], p_name=[$1])
-            RedToWhiteConverter
+          RedToWhiteConverter
+            RedProject(p_partkey=[$0], p_name=[$1])
               RedTableScan(table=[[red, part]])
           """,
+          physicalRel.explain());
+    }
+
+    @Test
+    void redJoin() {
+      var optimizer = new ColorsOptimizer();
+      var query =
+          """
+              SELECT ps.ps_partkey
+              FROM red.supplier AS s
+              JOIN red.partsupp AS ps
+                ON ps.ps_suppkey = s.s_suppkey
+              WHERE ps.ps_availqty < 5
+              """;
+      RelNode physicalRel = optimizer.optimizeFromSQL(query);
+      assertEquals(
+          """
+          RedToWhiteConverter
+            RedProject(ps_partkey=[$7])
+              RedJoin(condition=[=($8, $0)], joinType=[inner])
+                RedTableScan(table=[[red, supplier]])
+                RedFilter(condition=[<($2, 5)])
+                  RedTableScan(table=[[red, partsupp]])
+              """,
           physicalRel.explain());
     }
 
@@ -76,6 +100,35 @@ public class ColorsOptimizerTest {
                 BlueFilter(condition=[=($3, 5)])
                   BlueTableScan(table=[[blue, customer]])
           """,
+          physicalRel.explain());
+    }
+
+    @Test
+    void redBlueJoin() {
+      var optimizer = new ColorsOptimizer();
+      var query =
+          """
+          SELECT ps.ps_partkey, s_suppkey, s_name, n_name
+          FROM red.supplier AS s
+          JOIN red.partsupp AS ps
+            ON ps.ps_suppkey = s.s_suppkey
+          JOIN blue.nation AS n
+            ON n.n_nationkey = s.s_nationkey
+          WHERE ps.ps_availqty < 5
+          """;
+      RelNode physicalRel = optimizer.optimizeFromSQL(query);
+      assertEquals(
+          """
+          WhiteProject(ps_partkey=[$7], s_suppkey=[$0], s_name=[$1], n_name=[$13])
+            WhiteJoin(condition=[=($12, $3)], joinType=[inner])
+              RedToWhiteConverter
+                RedJoin(condition=[=($8, $0)], joinType=[inner])
+                  RedTableScan(table=[[red, supplier]])
+                  RedFilter(condition=[<($2, 5)])
+                    RedTableScan(table=[[red, partsupp]])
+              BlueToWhiteConverter
+                BlueTableScan(table=[[blue, nation]])
+              """,
           physicalRel.explain());
     }
 
